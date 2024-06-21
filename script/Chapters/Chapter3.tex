@@ -6,10 +6,270 @@
 \setcounter{chapter}{3}
 %\setcounter{section}{0}
 
-\section{Neural Networks}
+\chapter{Neural Networks}
+In the \nameref{Chapter1} chapter, we breifly talked about a neural network which can be used 
+to recognize hand-written digits. The neural network takes an image of a hand-written digit as 
+an input and predicts a number which corresponds to the digit as an output. In this chapter, 
+we will delve deeper into the architecture of neural networks and try to answer the following questions:
+\begin{enumerate}
+    \item What is the motivation behind using neural networks ?
+    \item What is the idea behind the structure (neurons, input layer, hidden layers, output layer) 
+    of neural networks ?
+    \item Why do we need an activation function and a loss function ?
+    \item How to train a neural networks ?
+    \item What are learning algorithms ?
+    \item Why certain neural networks can approximate any continuous function defined on a compact set ?
+\end{enumerate}
+Recognition of handwritten digits is a classic problem for introducing the topic of neural networks. Therefore 
+we will use this problem as an example to introduce various concepts related to neural networks.
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{Figures/ff_net.png}
+%     \caption{A feed-forward neural network which can recognize hand-written digits.}
+%     \label{fig:ffnet}
+% \end{figure}   
+\section{Handwritten digit recognition}
+Most people can easily recognize the handwritten digits shown in figure \ref{fig:my_digits}. Even if these digits were written 
+in a different manner (for example refer figure \ref{fig:my_threes} ), one would still be able to recognize them. 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.6\textwidth]{Figures/digits.png}
+    \caption{One of the ways of writing digits from $1$ to $9$.}
+    \label{fig:my_digits}
+\end{figure} 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.3\textwidth]{Figures/three_digit.png}
+    \caption{Different ways of writing the digit $3$.}
+    \label{fig:my_threes}
+\end{figure} This is due to the fact that our visual cortex has evolved over millions of years and therefore is magnificently 
+adapted to understand the visual world. The problem of recognizing hand-written digits is so trivial 
+for our brains that we don't have to put an effort to recognize digits. But this task will immediately 
+start to look complicated when one tries to write a computer program which can recognize hand-wriiten 
+digits. 
+Let us try to write a program for this task. We can start by coverting the digits into a pixel 
+image ($28 \times 28$ for example) and assign each a value from $0$ to $1$ based upon the level of darkness
+of each pixel (figure \ref{fig:pix7}). This can serve as an input to our program. 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.35\textwidth]{Figures/pixel_image_7.png}
+    \caption{A $28 \times 28$ pixel image of digit $7$. Each pixel is assigned a value from $0$ to $1$.}
+    \label{fig:pix7}
+\end{figure} 
+We can identify distinct features of each digit and write code which looks for these features in the input image. 
+Our program will therefore contain a lot of \emph{if} statements and \emph{for} loops to identify such features 
+but more importantly will contain thousands of line of code to handle exceptions which arise from the fact that 
+each digit can be written in a slightly different manner. It turns out it is very difficult to express algorithmically 
+the intuitions we have to recognize digits. Soon we will realize the complexity of this task. What if we could write a 
+program (for such fuzzy and difficult to-reason-about problems) that mimics the structure of our brain ?  
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=.6\textwidth]{Figures/mnist_digits.png}
+%     \caption{A sample of hand-written digits taken from MNIST dataset.}
+%     \label{fig:mnist}
+% \end{figure} 
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=.7\textwidth]{Figures/mnist_3s.png}
+%     \caption{A sample of hand-written digit $3$ taken from MNIST dataset.}
+%     \label{fig:mnist_3s}
+% \end{figure} 
+\section{Introduction to neural networks}
+Neural networks tackles this problem in a different way. The construction of neural network
+is inspired by the structure of our brain. 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.5\textwidth]{Figures/artificial_vs_normal_neurons.png}
+    \caption{Similarity between the structure of artificial and biological neuron.}
+    \label{fig:bio_neu}
+\end{figure} 
+The idea is to take a large number of handwritten digits together with labels and develop a system 
+which can learn from these examples just like we learn. We leave it to the system to automatically infer rules 
+from these examples and classify hand-written digits. 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.5\textwidth]{Figures/training_examples_mnist.png}
+    \caption{Some training examples from MNIST dataset.}
+    \label{fig:train_MNIST}
+\end{figure} 
 
+A neural network takes an input and given an output. Figure \ref{fig:ff_net} shows a pictorial representation of
+a neural network which can be used to classify handwritten digits. It has layers (input, hidden, output) which consist of 
+artificial neurons. The neurons are connected. Each neuron stores a value (for example from $0$ to $1$ in 
+our case of handwritten digit recognition). 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.8\textwidth]{Figures/ff_net.png}
+    \caption{A neural network to classify handwritten digits}
+    \label{fig:ff_net}
+\end{figure} 
+A neuron takes multiple inputs (say $a_1, a_2,....,a_n$) and gives the output $\sigma(\sum_{i =1}^n a_i w_i + b)$ where $\sigma$ is
+called an activation function. The inputs are multiplied by weights, $w_i$ and added to bias, $b$ before passing through the activation funciton.
+The choice of activation function depends on the type of problem one is trying to solve. For example, for hand-written digit recognition one could use sigmoid/logistic function
+as an activation function. 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.4\textwidth]{Figures/neuron.png}
+    \caption{Pictorial representation of an artificial neuron. Elaborate}
+    \label{fig:neuron}
+\end{figure} 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.4\textwidth]{Figures/sigmoid.png}
+    \caption{A sigmoid/logistic activation function, $\sigma (z) = \frac{1}{1+ e^{-z}}$}
+    \label{fig:sig}
+\end{figure} 
 
+Mathematically speaking, a neural network is simply a function that takes an input which passes through
+its layers (made up of neurons which are mathematical functions) and results in an output. The neural 
+network shown in figure \ref{fig:ff_net} has $784$ neurons in the input layer (containing data from a $28 \times 28$ pixel image), $15$
+neurons in the hidden layer and $10$ neurons in the output layer. Each neuron in the output layer corresponds to a digit from $0$ to $9$; if
+the input image is of digit $3$, only the fourth neuron in the outplayer will light up (output is close to $1$) while the rest will remain dormant (outputs are close to $0$).
+Such neural networks are called feed-forward neural networks. When we look at the architecture of a neural network, many questions can 
+come to our mind, for example, 
+\begin{enumerate}
+    \item Why the network has this structure (i.e. layers with neurons) ?
+    \item What is the purpose of using an activation function ?
+    \item How does a neural network able to recognize hand-written digits ?
+\end{enumerate} 
+It is not clear why this appraoch of using neural networks even works. Even if we assume that this approach works, another question arises,
+which is, how do we get the weights, $w_i$ and biases $b_i$ of the network ? The answer to this question
+comes from a key ability of neural networks which is \emph{learning}.
+\subsection{Learning from data}
+Learning is the process of obtaining suitable weights and biases such that a neural network can perform
+the desired task. There are several steps involved in learning. First step is to assign random values to 
+weights and biases of the network and show the network some training examples. In the case of handwritten digit recognition
+we use MNIST dataset. Since the network is initialized with random weights and biases it will wrongly classify handwritten digits. 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.4\textwidth]{Figures/rand_inp.png}
+    \caption{Results from a randomaly initialized neural network and how it compares to the desired output for a training example}
+    \label{fig:randinp}
+\end{figure} 
+Next step is to tell the network to update its weights and biases in order to reduce the classfication error. This is done by introducing a 
+cost/loss function which can quantify the classification error. We use a quadratic loss function, 
+$$l(w,b) = \frac{1}{N} \sum_x {\|y(x) - a\|}^2$$
+where $N$ denotes the number of training examples, $y(x)$ is the desired output corresponding to training example $x$, and 
+$a$ is the neural network output. Our aim is to find $w,b$ such that the loss is minimum. The problem of learning from training data thus translates into
+solving an optimization problem. But this process raises another set of questions,
+\begin{enumerate}
+    \item Which optimization algorithm to choose for minimizing the cost function?
+    \item How to define a suitable loss function ?
+    \item Does a global minimum exists for a chosed loss function ?
+\end{enumerate}
+The answer these questions and the questions that we raised earlier we will have to first understand the origins of neural networks.
+\subsection{Origins of neural networks}
+The artificial neurons we introduced earlier are called sigmoid neurons. In order to understand 
+why sigmoid neurons are defined the way they are, we need to first understand another artificial 
+neuron called perceptron. Perceptrons were developed in the $1950$s and $1960$s. Unlike sigmoid neurons 
+whose inputs, $x_i \in \mathbb{R}$, a perceptrons can take only binary inputs and produce a binary output.
+The mathematical model of a perceptron is,
+\begin{equation*}
+    \text{output} = 
+     \begin{cases}
+       0 &\quad \text{if} \ \ \sum_i w_i x_i \leq \ \text{threshold} \\
+       1 &\quad  \text{if} \ \ \sum_i w_i x_i > \ \text{threshold} 
+     \end{cases}
+\end{equation*}
+where $x_i$ are the inputs and $w_i$ are the weights. The output is $1$ if $\sum_i w_i x_i$ exceeds a threshold 
+value otherwise the output is $0$. Perceptrons can be used as a device to make simple decisions by weighing up evidence. 
+The following example illustrates how perceptrons can be used to make a decision.
+\begin{boxedexample}
+    Suppose a rock band is coming to perform in your city. You like rock music, and are trying to 
+    decide whether or not to go to this event. You can make the decision by weighing up three factors:
+   \begin{enumerate}
+    \item Is the event nearby ?
+    \item Are your friends accompanying you ?
+    \item Is the weather good ?
+   \end{enumerate}
+\end{boxedexample}
 
+\section{The universal approximation theorem}
+Neural networks are mathematical functions. We use training data to look for suitable weights and biases
+such that the neural network can map/obtain the underlying function from which the data is drawn. But, how can one
+believe that a neural network have the capability of finding the underlying function. What is so special about the
+neural network structure that after training it is able to give us great results on unseen data/ test data ? The answer to these
+questions lies in the universal approximation theorem (UAT) proposed by George Cybenko in $1989$. 
+George Cybenko gave a rigorous proof that feed-forward neural networks can approximate any continuous function defined on a compact set. To understand the 
+proof of this theorem, one should be familiar with some concepts from measure theory and functional analysis. 
+Let us first briefly go through those mathematical preliminaries.
+\begin{itemize}
+    \item Consier an $n$-dimensional unit cube, $I_n = [0,1]^n$. In the universal approximation theorem, the continuous
+    functions that a neural network aims to approximate are defined on compacts sets, $I_n$ i.e. the domain of continuous
+    functions is $I_n$. 
+    \item Let $C(I_n)$ denote the space of continuous functions on $I_n$. 
+    For any function $f \in C(I_n), f : [0,1]^n \rightarrow \mathbb{R}$, one can define a suitable norm, 
+    $\|f\| = \text{sup}_{x \in I_n} |f(x)|$ known as uniform/supremum norm. We can associate a dual space to $C(I_n)$ 
+    defined as $C(I_n)* = \{L : C(I_n) \rightarrow \mathbb{R}\}$ where $L$ is a linear operator.
+    \item UAT is defined for feed-forward neural networks having an input layer (with multiple neurons), one hidden layer and
+    an output layer with only one neuron (see figure \ref{fig:ffnn_UAT}). Therefore, the functions generated by the neural network can be described as
+    $$G(x) = \sum_{j=1}^{N} \alpha_j \sigma (w_j\cdot x + b_j), \quad w_j \in \mathbb{R}^n, \alpha_j, b_j \in \mathbb{R}, x \in I_n$$
+    where $N$ is the number of neurons in the hidden layer. We can note that bias is not added to output from the hidden
+    layer. Also the output is not passed to an activation function. We denote the set of functions of the form $G(x)$
+    by $\mathcal{N}$. In the problem of hand-written digit recognition, we assumed that the activation function, $\sigma$ is logistic/sigmoid. 
+    However, UAT was proved for a general class of activation functions. The actvation functions are assumed to be continuous and 
+    discriminatory. 
+\end{itemize} 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.4\textwidth]{Figures/ffnn_UAT.jpg}
+    \caption{A feed-forward neural network with an input layer (having multiple neurons), one hidden layer and an output layer (having only one neuron).}
+    \label{fig:ffnn_UAT}
+\end{figure}
+\begin{definition}[Discriminatory function]
+    We say that $\sigma$ is discriminatory if for a measure $\mu \in M(I_n)$ (where $M(I_n)$ is the space 
+of finite, signed regular Borel measures on $I_n$) 
+$$\int_{I_n} \sigma (\mathbf{w}\cdot\mathbf{x} + b) \ d\mu(\mathbf{x}) = 0$$
+for all $\mathbf{w} \in \mathbb{R}^n$ and $b\in \mathbb{R}$ implies that $\mu = 0$.
+\end{definition}
+\begin{thm}[Universal approximation theorem]
+    Let $\sigma$ be any continuous discriminatory function. Then the set $\mathcal{N}$ of functions of the form 
+    $$G(x) = \sum_{j=1}^{N} \alpha_j \sigma (w_j\cdot x + b_j), \quad w_j \in \mathbb{R}^n, \alpha_j, b_j \in \mathbb{R}, x \in I_n$$
+    are dense in $C(I_n)$.
+\end{thm}
+The set $\mathcal{N}$ is dense in $C(I_n)$ if given any function $f \in C(I_n)$ and $\epsilon > 0$, there exists
+a $G(x) \in \mathcal{N}$ such that 
+$$\| G(x) - f(x)\| < \epsilon \ \text{for all} \ x \in I_n$$
+Before going into the proof of UAT, we will familiarize ourselfves with some key ideas from measure theory.
+\begin{itemize}
+    \item Our aim to measure subsets of $I_n = [0,1]^n$. A collection $\sum$ of subsets of $I_n$ is called a 
+    $\sigma$-algebra if 
+    \begin{enumerate}
+        \item $I_n \in \sum$
+        \item If $A \in \sum$, then $A^c = I_n\backslash A \in \sum$
+        \item If $A_1, A_2, .....$ is a countable collection of subsets of $\sum$ then $\bigcup^\infty A_i \in \sum$.
+    \end{enumerate}
+    \item Borel $\sigma$-algebra on $I_n$ is the smallest $\sigma$-algebra  containing all open sets in $I_n$. Sets in Borel $\sigma$-algebra 
+    are called Borel sets.
+    \item A finite signed Borel measure $\mu$ on $I_n$ is a real valued  function, $\mu : \sum \rightarrow \mathbb{R}$  (where
+    $\sum$ is a Borel $\sigma$-algebra defined on $I_n$) such that 
+    \begin{enumerate}
+        \item $\mu (\phi) = 0$
+        \item $\mu (\bigcup_{i=1}^{\infty} A_i) = \sum_{i=1}^{\infty} \mu(A_i), A_i \ \text{are disjoint sets}$
+        \item $\mu(A_i) < \infty$
+    \end{enumerate}
+    \item A Borel measure is regular if 
+    \begin{align*}
+        &\mu(A) = \text{sup} \{\mu(K) | K \subseteq A, K \ \text{is compact}\} \\
+        &\mu(A) = \text{inf} \{\mu(U) | A \subseteq U, U \ \text{is open}\}
+    \end{align*}
+    In other words, what regular means is every measurable set can be approximated from above by open measurabel 
+    sets and from below by compact measurable sets. 
+    \item We define $M(I_n)$ as the set of all finite signed regular Borel measures on $I_n$.
+\end{itemize}
+The proof of UAT also uses some ideas from Hahn-Banach theorem and Riesz representation theorem. These theorems 
+have various equivalent versions. We now define the versions which we will refer to later. 
+\begin{thm}[Riesz representation theorem]
+    If $K \subset \mathbb{R}^d$ is a compact set, then every linear functional $L$ defined on
+    $C(K)$ can represented by a unique regular signed Borel measure $\mu \in M(K)$ in the sense that,
+    $$L(f) = \int_K f \ d\mu$$
+    where $f: K \rightarrow \mathbb{R}$
+\end{thm}
+\begin{thm}[Hahn-Banach theorem]
+    Let $M$ be a linear subspace of a normed linear space $X$, and $f_0 \in X$. Then $f_0$ is 
+    in the closure $\overline{M}$ of $M$ if and only if there is no bounded linear functional 
+    $L$ on $X$ such that $L(f) = 0 $ for all $f\in M$ but $L(f_0) \neq 0$.
+\end{thm}
 
 
 \chapter{Kernel based approximation}
