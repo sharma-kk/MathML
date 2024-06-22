@@ -262,7 +262,7 @@ have various equivalent versions. We now define the versions which we will refer
     If $K \subset \mathbb{R}^d$ is a compact set, then every linear functional $L$ defined on
     $C(K)$ can represented by a unique regular signed Borel measure $\mu \in M(K)$ in the sense that,
     $$L(f) = \int_K f \ d\mu$$
-    where $f: K \rightarrow \mathbb{R}$
+    where $f: K \rightarrow \mathbb{R}$.
 \end{thm}
 \begin{thm}[Hahn-Banach theorem]
     \label{thm:HB}
@@ -291,4 +291,27 @@ We now give the proof of universal approximation theorem \ref{thm:UAT}.
    However, we assumed that $\sigma$ is a discriminatory functions therefore this condition implies that $\mu =0$. This contradicts our initial assumption that 
    $\overline{\mathcal{N}} \neq 0$ which led to $L \neq = 0 \equiv \mu \neq 0$ via Hahn Banach theorem. Hence, the subspace $\mathcal{N}$ must be dense in $C(I_n)$. 
 \end{proof}
-
+The universal approximation theorem gives us confidence that neural networks can indeed approximate any continuous function 
+provided that the activation function is continuous and discriminatory. However, it is not clear how to build activation functions which are 
+discriminatory.
+\begin{definition}
+    \label{def:sig}
+    We say that $\sigma$ is sigmoidal if 
+    \begin{equation*}
+        \sigma(t) \rightarrow 
+         \begin{cases}
+           1 &\quad \text{as} \ \ t\rightarrow +\infty\\
+           0 &\quad \text{as} \ \ t\rightarrow -\infty.
+         \end{cases}
+    \end{equation*}
+\end{definition}
+\begin{lemma}
+    \label{lem:sig}
+    Any continuous sigmoidal function is discriminatory.
+\end{lemma}
+\begin{proof}
+    Refer Cybenko paper.
+\end{proof}
+The lemma \ref{lem:sig} gives us a way to build suitable activation functions. In fact, the sigmoid/logistic function we used as an activation function
+in the neural network for solving hand-written recognition problem satisfies the conditions of definition \ref{def:sig} and is therefore, discriminatory. Although 
+logistic function is monotonically increasing, no monotonicity is required by definition \ref{def:sig}.
