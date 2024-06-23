@@ -26,6 +26,7 @@ we will use this problem as an example to introduce various concepts related to 
 %     \caption{A feed-forward neural network which can recognize hand-written digits.}
 %     \label{fig:ffnet}
 % \end{figure}   
+%%%%%%%%%%%%%%%% Handwritten digit recog %%%%%%%%%
 \section{Handwritten digit recognition}
 Most people can easily recognize the handwritten digits shown in figure \ref{fig:my_digits}. Even if these digits were written 
 in a different manner (for example refer figure \ref{fig:my_threes} ), one would still be able to recognize them. 
@@ -72,6 +73,7 @@ program (for such fuzzy and difficult to-reason-about problems) that mimics the 
 %     \caption{A sample of hand-written digit $3$ taken from MNIST dataset.}
 %     \label{fig:mnist_3s}
 % \end{figure} 
+%%%%%%%%%%%%%%%% Intro to NN %%%%%%%%%%%%%
 \section{Introduction to neural networks}
 Neural networks tackles this problem in a different way. The construction of neural network
 is inspired by the structure of our brain. 
@@ -133,6 +135,7 @@ come to our mind, for example,
 It is not clear why this appraoch of using neural networks even works. Even if we assume that this approach works, another question arises,
 which is, how do we get the weights, $w_i$ and biases $b_i$ of the network ? The answer to this question
 comes from a key ability of neural networks which is \emph{learning}.
+%%%%%%%%%%%%%%%% Learning from data %%%%%%%%%%%
 \subsection{Learning from data}
 Learning is the process of obtaining suitable weights and biases such that a neural network can perform
 the desired task. There are several steps involved in learning. First step is to assign random values to 
@@ -146,7 +149,7 @@ we use MNIST dataset. Since the network is initialized with random weights and b
 \end{figure} 
 Next step is to tell the network to update its weights and biases in order to reduce the classfication error. This is done by introducing a 
 cost/loss function which can quantify the classification error. We use a quadratic loss function, 
-$$l(w,b) = \frac{1}{N} \sum_x {\|y(x) - a\|}^2$$
+$$C(w,b) = \frac{1}{N} \sum_x {\|y(x) - a\|}^2$$
 where $N$ denotes the number of training examples, $y(x)$ is the desired output corresponding to training example $x$, and 
 $a$ is the neural network output. Our aim is to find $w,b$ such that the loss is minimum. The problem of learning from training data thus translates into
 solving an optimization problem. But this process raises another set of questions,
@@ -156,6 +159,7 @@ solving an optimization problem. But this process raises another set of question
     \item Does a global minimum exists for a chosed loss function ?
 \end{enumerate}
 The answer these questions and the questions that we raised earlier we will have to first understand the origins of neural networks.
+%%%%%%%%%%%%%% Origins of NN %%%%%%%%%%%%%%
 \subsection{Origins of neural networks}
 The artificial neurons we introduced earlier are called sigmoid neurons. In order to understand 
 why sigmoid neurons are defined the way they are, we need to first understand another artificial 
@@ -180,8 +184,139 @@ The following example illustrates how perceptrons can be used to make a decision
     \item Are your friends accompanying you ?
     \item Is the weather good ?
    \end{enumerate}
+   We can assign binary variables $x_1, x_2$ and $x_3$ to these three factors. For example, if the event is nearby we would
+   have $x_1 =1$ but if it is far away we would have $x_1 = 0$. Similarly, if your friends are accompanying you, $x_2 =1$ otherwise $x_2 =0$.
+   If the weather is good, $x_1 =0$ and if the weather is bad, $x_3 =0$. Now suppose, you absolutely love rock music and it doesn't really 
+   matter to you if your friends can accompany you or if the event is nearby but you really loathe bad weather and you won't go if the
+   weather is bad. You can use perceptrons to model this kind of decision-making. One way is to choose, $w_3 = 6$ for the weather and
+   $w_1 =2, w_2 =2$ for other conditions. The larger value of $w_3$ in comparison to $w_1$ and $w_2$ suggests that weather matters to you a lot. 
+   Finally, suppose you choose a thresold value of $5$ for the perceptron. With these choices, the perceptron mimics the desired 
+   decision-making model, outputting $1$ whenever the weather is good, and $0$ whenever the weather is bad. By choosing different values for 
+   weights and the thresold, we can get different models of decision making. 
 \end{boxedexample}
+It is obvious that the perceptron isn't a complete model of human descision-making. But it is plausible that if we use more layers in the network
+with more number of perceptrons, the network could make more complex descisions:
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.4\textwidth]{Figures/perceptron_network.png}
+    \caption{A network built out of perceptrons.}
+    \label{fig:percep_net}
+\end{figure} 
+We can write the mathematical model of a perceptron in a way familiar to us, 
+\begin{equation*}
+    \text{output} = 
+     \begin{cases}
+       0 &\quad \text{if} \ \ \sum_i w_i x_i + b \leq 0 \\
+       1 &\quad  \text{if} \ \ \sum_i w_i x_i + b > 0 
+     \end{cases}
+\end{equation*}
+where perceptron's bias, $b \equiv -$threshold. We have seen that a network of perceptrons can be used as 
+a method for weighing evidence to make decisions. We can also use perceptrons to compute the elementary logical functions such as
+AND, OR, and NAND. The NAND gates are universal for computation, and therefore it follows that perceptrons are also universal for
+computation. This property of perceptrons tells us that networks of perceptrons can be as powerful as any other computing device. These 
+properties of perceptrons might make them an attractive option for solving decision-making problems but the property that we 
+are really looking for in the network is the ability to tune its weights and biases in response to external stimuli (for example training data).
+We want our network to learn from data. In order to devise learning algorithms for a network, we would like that if we make 
+a small change in some weight (or bias) in the network, the output changes only by a small amount. Schematically, here's is what we want:
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.4\textwidth]{Figures/precepnet2.png}
+\end{figure}
+ 
+Unfortunately, a network of perceptrons doesn't have this capability. This is the reason why we use sigmoid neurons. Unlike perceptrons, the sigmoid 
+neurons can take input values between $0$ and $1$. The activation function used in sigmoid neurons can be described as, 
+$$\sigma(z) = \frac{1}{1 + e^{-z}}.$$
+The smoothness of $\sigma$ ensures that a small change in the input causes a small change in the output. 
 
+Figure \ref{fig:deepNN} shows an architecture of a typical (feed-forward) neural network. It consists of an input layer, multiple hidden layers and an output layer. The choice of
+the number of neurons in the input and output layers is governed by the problem one is trying to solve. For example, in the case of 
+hand-wriiten digit recognition, if the input image consists of data from $28 \times 28 = 784$ pixels, the input layer will have $784$ neurons. We want to classify the 
+images into digits from $0$ to $9$ and therefore the output layer will have $10$ neurons. The design (number of layers and number of neurons) of hidden layers
+is based on heuristics. Let us now look at a neural network (in detail) which can classify handwritten digits. 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.4\textwidth]{Figures/DeepNN.png}
+    \caption{A feedforward neural network with an input layer $\in \mathbb{R}^{16}$, two hidden layers and an output layer $\in \mathbb{R}^2$.}
+    \label{fig:deepNN}
+\end{figure}
+%%%%%%%%%%%% network to classify HD %%%%%%%%%%%%
+\subsection{A network to classify handwritten digits}
+We use a network consisting of an input layer $\in \mathbb{R}^{784}$, one hidden layer and an output layer $\in \mathbb{R}^{10}$ to classify handwritten
+digits (see figure \ref{fig:NN_HD}). Let us try to understand how this neural network works. 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.4\textwidth]{Figures/NN_2.png}
+    \caption{A neural network which can classify handwritten digits.}
+    \label{fig:NN_HD}
+\end{figure} 
+The main feature of this network is its ability to learn from data. We use MNIST data set which consists of scanned images of handwritten digits written by $250$ people. The MNIST data
+comes in two parts; a training data set containing $60000$ imgaes and a test data set containing $10000$ images. The images are in grescale and have size of $28 \times 28$ pixels.
+The MNIST data, along with hand-written digits, also provide correct labels corresponding to the digits. 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.4\textwidth]{Figures/mnist_data_sample.png}
+    \caption{A sample of training data from MNIST data set.}
+    \label{fig:mnist_data}
+\end{figure} 
+The input $x$ to the network is a $28 \times 28 = 784$ dimensional vector and the output $a$ is a $10$ dimensional vector. In order to quantify, the 
+accuracy of this network's prediction, we define a cost/loss function,
+$$C(w,b) = \frac{1}{N} \sum_x {\|y(x) - a\|}^2$$
+where $N$ denotes the number of training examples, $y(x)$ is the desired output (a $10$ dimensional vector) corresponding to a training example $x$, and 
+$a$ is the neural network output. The idea is to find weights and biases which minimizes the difference between the desired output (labels) and the network prediction and we want this to happen for all training examples. For example, 
+if an input $x$ is an image of digit $6$, we want our network's output $a$ to be as close as possible to $y(x) = (0,0,0,0,0,0,1,0,0,0)^T$. The problem of 
+minimizing the loss function is an optimization problem. In the context of neural networks, the most popular methods which are used to minimize the loss function are 
+inspired from the gradient descent method. 
+
+Let us consider a simple example to understand the gradient descent method. Suppose we want to minimize a function $C(\mathbf{v})$ of two variables $v_1$ and $v_2$ (see figure \ref{fig:cost_f}).
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.4\textwidth]{Figures/cost_func.png}
+    \caption{A function $C$ of two variables $v_1$ and $v_2$.}
+    \label{fig:cost_f}
+\end{figure} 
+We can use calculus to calculate the gradients of $C(\mathbf{v})$ with resprect two $v_1, v_2$ and use them to find places where $C$ is minimum. This method could work well when 
+$C$ is a function of few variables but soon will turn into a nightmare when we increase the number of variables. Typically, the cost function of a neural network depends on a large number of
+weights and biases; in fact the biggest neural networks consists of billions of weigths and biases. Therefore, one has to come up with cost effective 
+methods of finding the minima of cost functions. Grandient descent is one such method. It is an interative method, where one starts 
+with an initial guess for variables and update them over multiple iterations in such a 
+way that the cost function reduces with each iteration. Consider the case of cost function $C(\mathbf{v}$). For small changes $\Delta v_1$ and  $\Delta v_2$ in variables $v_1$ and 
+$v_2$ respectively, we can write the change in cost function $\Delta C$ as
+\begin{equation}
+    \label{eq:del_C}
+    \Delta C \approx \frac{\partial C}{\partial v_1}\Delta v_1 + \frac{\partial C}{\partial v_2} \Delta v_2 = \nabla C \cdot \Delta \mathbf{v}
+\end{equation}
+The aim is to find suitable change $\Delta \mathbf{v}$ which leads to reduction in $C$ i.e. $\Delta C < 0$. One such choice is $\Delta \mathbf{v} = -\eta \nabla C$ provided $\eta > 0$,
+$$\Delta C \approx \nabla C \cdot \eta \nabla C = \eta \|\nabla C\|^2 < 0 $$
+To conclude, in the gradient descent method we start with an initial guess $\mathbf{v}$ and update it by following
+ $$\mathbf{v} \rightarrow \mathbf{v}' = \mathbf{v} - \eta \nabla l$$
+untill we reach the minimum of $C(\mathbf{v})$. In the context of neural networks, a gradient descent update might look like this, 
+\begin{equation}
+    \begin{aligned}
+        w_j \rightarrow w_j' = w_j - \eta \frac{\partial C}{\partial w_j}\\
+        b_k \rightarrow b_k' = b_k - \eta \frac{\partial C}{\partial b_k}.
+    \end{aligned}
+\end{equation}
+Note that the parameter $\eta$ should be sufficiently small in order to justify the assumption in equation \eqref{eq:del_C}. 
+We call this parameter the \emph{learning rate}. The use of gradient descent method might seem as a
+good alternative to using analytical methods but there are still a number of challenges in applying this method. Notice that the cost function has the form
+$C = \frac{1}{N} \sum_x C_x$, that is, it's an average overs costs $C_x = \|y(x) - a\|^2$ for individual training examples. In order to make an update of gradient
+descent, we need to compute the gradients $\nabla C_x$ separately for each training input and then average them, $\nabla C = \frac{1}{N} \sum_x \nabla C_x$. This update can take 
+extremely long time to make when the number of training inputs are very large and thus making the \emph{learning} very slow. 
+
+We can overcome the issue of slow \emph{learning} by using a variant of gradient descent method known as \emph{stochastic gradient method}. The idea is to estimate the gradient
+$\nabla C$ by computing $\nabla C_x$ for a small sample of training examples and use it to make updates in weights and biases. The following steps are involved in using the stochastic gradient descent method,
+\begin{enumerate}
+    \item Shuffle the training inputs and divide into batches of size $m$. Each batch (we call them mini-batchs) consits of training examples say, $X_1, X_2, .....X_m$.
+    \item Calculate gradients for one mini-batch: $$\frac{1}{m} \sum_{i=1}^{m} \nabla C_{X_i} \approx \frac{1}{N} \sum_x \nabla C_x = \nabla C$$
+    \item Make an update in the weights and biases: 
+    $$w_j \rightarrow w_j' = w_j - \frac{\eta}{m} \sum_i \frac{\partial C_{X_i}}{\partial w_j}$$
+    $$b_k \rightarrow b_k' = b_k - \frac{\eta}{m} \sum_i \frac{\partial C_{X_i}}{\partial b_k}$$
+    \item Pick another mini-batch from the shuffled data and repeat steps $2$ and $3$ until all training inputs are exhausted. The end of this step is referred to as an \emph{epoch} of training.
+    \item Repeat steps $1$ to $5$ until the network is sufficiently trained.
+\end{enumerate}
+The use of stochastic gradient significantly increases the speed at which a network is trained. We may be making less accurate updates (hence the name \emph{stochastic}) in the weights and biases in comparison to 
+standard gradient descent method but nevertheless the updates are faster and over multiple iterations the cost (on an average) does go down.   
+%%%%%%%%%%% UAT %%%%%%%%%%%%%%%%%%%%%
 \section{The universal approximation theorem}
 Neural networks are mathematical functions. We use training data to look for suitable weights and biases
 such that the neural network can map/obtain the underlying function from which the data is drawn. But, how can one
@@ -195,7 +330,7 @@ Let us first briefly go through those mathematical preliminaries.
     \item Consier an $n$-dimensional unit cube, $I_n = [0,1]^n$. In the universal approximation theorem, the continuous
     functions that a neural network aims to approximate are defined on compacts sets, $I_n$ i.e. the domain of continuous
     functions is $I_n$. 
-    \item Let $C(I_n)$ denote the space of continuous functions on $I_n$. 
+    \item Let $C(I_n)$ denote the space of continuous functions on $I_n$.
     For any function $f \in C(I_n), f : [0,1]^n \rightarrow \mathbb{R}$, one can define a suitable norm, 
     $\|f\| = \text{sup}_{x \in I_n} |f(x)|$ known as uniform/supremum norm. We can associate a dual space to $C(I_n)$ 
     defined as $C(I_n)* = \{L : C(I_n) \rightarrow \mathbb{R}\}$ where $L$ is a linear operator.
