@@ -303,7 +303,7 @@ $C = \frac{1}{N} \sum_x C_x$, that is, it's an average overs costs $C_x = \|y(x)
 descent, we need to compute the gradients $\nabla C_x$ separately for each training input and then average them, $\nabla C = \frac{1}{N} \sum_x \nabla C_x$. This update can take 
 extremely long time to make when the number of training inputs are very large and thus making the \emph{learning} very slow. 
 
-We can overcome the issue of slow \emph{learning} by using a variant of gradient descent method known as \emph{stochastic gradient method}. The idea is to estimate the gradient
+We can overcome the issue of slow \emph{learning} by using a variant of gradient descent method known as \emph{stochastic gradient descent (SGD) method}. The idea is to estimate the gradient
 $\nabla C$ by computing $\nabla C_x$ for a small sample of training examples and use it to make updates in weights and biases. The following steps are involved in using the stochastic gradient descent method,
 \begin{enumerate}
     \item Shuffle the training inputs and divide into batches of size $m$. Each batch (we call them mini-batchs) consits of training examples say, $X_1, X_2, .....X_m$.
@@ -314,8 +314,88 @@ $\nabla C$ by computing $\nabla C_x$ for a small sample of training examples and
     \item Pick another mini-batch from the shuffled data and repeat steps $2$ and $3$ until all training inputs are exhausted. The end of this step is referred to as an \emph{epoch} of training.
     \item Repeat steps $1$ to $5$ until the network is sufficiently trained.
 \end{enumerate}
-The use of stochastic gradient significantly increases the speed at which a network is trained. We may be making less accurate updates (hence the name \emph{stochastic}) in the weights and biases in comparison to 
-standard gradient descent method but nevertheless the updates are faster and over multiple iterations the cost (on an average) does go down.   
+The use of SGD significantly increases the speed at which a network is trained. We may be making less accurate updates (hence the name \emph{stochastic}) in the weights and biases in comparison to 
+standard gradient descent method but nevertheless the updates are faster and over multiple iterations the cost (on an average) does go down. 
+\subsection{Implementation of a neural network to classify digits}
+\section{Backpropagation}
+Backpropagation is a fast algorithm for computing gradients. Today, it is the workhorse of learning in neural networks. It uses chain-rule from 
+Calculus to compute gradients $\frac{\partial C}{\partial w_i}, \frac{\partial C}{\partial b_i}$ and in the process reveals how changing the weights and 
+biases changes the overall behaviour of the network. We will first see how backpropagation works for a very simple neural network and then generalize the procdure for
+big neural networks. Consider a neural network having one neuron in the input layer, two hidden layers each with one neuron and one neuron in the output layer. 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.5\textwidth]{Figures/simpNN.png}
+    \caption{A simple neural network with only neuron in each layer}
+    \label{fig:sim_NN}
+\end{figure} 
+We can write the loss function as 
+$$C = \frac{1}{N} \sum_{k=0}^{N-1} C_k.$$
+Let us focus on the cost correponding to one training example,
+$$C_0 = (a^{(L)} - y)^2$$ 
+where $a^{(L)}$ denotes the network output and $y$ is the desired output. We label the activation/output from the last neuron with a superscript $L$, indicating which layer it's in, so the
+activation of the previous neuron is $a^{(L-1)}$. We can express the last activation $a^{(L)}$ by 
+$$a^{(L)} = \sigma (w^{(L)}a^{(L-1)} + b^{(L)})$$
+where $w^{(L)}$ and $b^{(L)}$ denote the weight and bias of the last neuron respectively. We introduce a new variable $z$ (called weighted sum) for the input to the activation function and keep the same superscript as the activation:
+$$z^{(L)} = w^{(L)} a^{(L-1)} + b^{(L)}$$
+$$a^{(L)} = \sigma (z^{(L)}) $$
+We first calculate $\frac{\partial C_0}{\partial w^{(L)}}$ which gives us a measure of how changes in $w^{(L)}$ affects $C_0$. We use the chain-rule from calculus and write, 
+\begin{equation}
+    \label{eq:sim_grad_w}
+    \frac{\partial C_0}{\partial w^{(L)}} = \frac{\partial z^{(L)}}{\partial w^{(L)}} \frac{\partial a^{(L)}}{\partial z^{(L)}} \frac{\partial C_0}{\partial a^{(L)}}
+\end{equation}
+The terms in equation \eqref{eq:sim_grad_w} become clear if we refer to the tree of variables of the network. We can express the terms in equation \eqref{eq:sim_grad_w} by
+\begin{equation*}
+    \begin{aligned}
+        & \frac{\partial z^{(L)}}{w^{(L)}} = a^{(L-1)} \quad \text{since} \ z^{(L)} = w^{(L)} a^{(L-1)} + b^{(L)}\\
+        & \frac{\partial a^{(L)}}{\partial z^{(L)}} = \sigma'(z^{(L)}) \quad \text{since} \ a^{(L)} = \sigma (z^{(L)})\\
+        & \frac{\partial C_0}{\partial a^{(L)}} = 2 (a^{(L)} - y) \quad \text{since} \ C_0 = (a^{(L)} - y)^2.
+    \end{aligned}
+\end{equation*}
+where $\sigma'(z^{(L)})$ denotes the derivative of the activation function. This reduces equation \eqref{eq:sim_grad_w} to 
+\begin{equation}
+    \label{eq:del_w}
+    \frac{\partial C_0}{\partial w^{(L)}} = a^{(L-1)} \cdot \sigma'(z^{(L)}) \cdot 2(a^{(L)} -y). 
+\end{equation}
+Next, we calculate the gradient of loss with respect to bias, $b^{(L)}$. 
+$$\frac{\partial C_0}{\partial b^{(L)}} = \frac{\partial z^{(L)}}{\partial b^{(L)}} \frac{\partial a^{(L)}}{\partial z^{(L)}} \frac{\partial C_0}{\partial a^{(L)}}$$
+We need to just calculate $\frac{\partial z^{(L)}}{b^{(L)}}$ in order to find $\frac{\partial C_0}{b^{(L)}}$ since the other terms are already available to us from equation \eqref{eq:sim_grad_w}. Therefore, we can write, 
+\begin{equation}
+    \label{del_b}
+    \frac{\partial C_0}{\partial b^{(L)}} = 1 \cdot \sigma'(z^{(L)}) \cdot 2(a^{(L)} -y).
+\end{equation}
+At last, we calculate $\frac{\partial C_0}{\partial a^{(L-1)}}$. 
+\begin{equation}
+    \label{eq:del_a}
+    \frac{\partial C_0}{\partial a^{(L-1)}} = \frac{\partial z^{(L)}}{a^{(L-1)}} \frac{\partial a^{(L)}}{\partial z^{(L)}} \frac{\partial C_0}{\partial a^{(L)}} = w^{(L)}\cdot\sigma'(z^{(L)}) \cdot 2(a^{(L)} -y).
+\end{equation}
+The procedure to obtain the cost gradient for second-last layer variables is pretty straitforward now. We just replace the superscript $L$ by $L-1$. 
+\begin{equation}
+    \label{eq:del_sl}
+    \begin{aligned}
+        &\frac{\partial C_0}{\partial w^{(L-1)}} = \frac{\partial z^{(L-1)}}{\partial w^{(L-1)}} \frac{\partial a^{(L-1)}}{\partial z^{(L-1)}} \frac{\partial C_0}{\partial a^{(L-1)}}\\
+        &\frac{\partial C_0}{\partial b^{(L-1)}} = \frac{\partial z^{(L-1)}}{\partial b^{(L-1)}} \frac{\partial a^{(L-1)}}{\partial z^{(L-1)}} \frac{\partial C_0}{\partial a^{(L-1)}}
+    \end{aligned}
+\end{equation}
+We have already calculated $\frac{\partial C_0}{\partial a^{(L-1)}}$ in the previous. For the remaining terms, we know that,
+ $\frac{\partial z^{(L-1)}}{\partial w^{(L-1)}} = a^{(L-2)}$, $\frac{\partial a^{(L-1)}}{\partial z^{(L-1)}} = \sigma'(z^{(L-1)})$ and  $\frac{\partial z^{(L-1)}}{\partial b^{(L-1)}} = 1$
+ thus reducing the equations \eqref{eq:del_sl} to
+ \begin{equation}
+    \label{eq:del_sl_f}
+    \begin{aligned}
+        &\frac{\partial C_0}{\partial w^{(L-1)}} =  a^{(L-2)} \cdot \sigma'(z^{(L-1)}) \cdot \frac{\partial C_0}{\partial a^{(L-1)}}\\
+        &\frac{\partial C_0}{\partial b^{(L-1)}} = 1 \cdot \sigma'(z^{(L-1)}) \cdot \frac{\partial C_0}{\partial a^{(L-1)}}
+    \end{aligned}
+\end{equation}
+\begin{figure}
+\centering
+    \includegraphics[width=.5\textwidth]{Figures/treeNN.png}
+    \caption{This tree shows how the variables are connected in the neural network}
+    \label{fig:tree_NN}
+\end{figure} 
+We have now finished the calculation of all gradients of the network. Although the above procedure is described for a network with only two hidden layers, 
+we can easily generalize the methodology for networks with more hidden layers. In fact, the procedure is essentially the same even if we increase the number of neurons
+in each layer. We demonstrate this by considering a general neural network with multiple hidden layers each having multiple neurons. 
+
 %%%%%%%%%%% UAT %%%%%%%%%%%%%%%%%%%%%
 \section{The universal approximation theorem}
 Neural networks are mathematical functions. We use training data to look for suitable weights and biases
