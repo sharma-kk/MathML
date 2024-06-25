@@ -395,7 +395,42 @@ We have already calculated $\frac{\partial C_0}{\partial a^{(L-1)}}$ in the prev
 We have now finished the calculation of all gradients of the network. Although the above procedure is described for a network with only two hidden layers, 
 we can easily generalize the methodology for networks with more hidden layers. In fact, the procedure is essentially the same even if we increase the number of neurons
 in each layer. We demonstrate this by considering a general neural network with multiple hidden layers each having multiple neurons. 
-
+\begin{figure}
+    \centering
+        \includegraphics[width=.5\textwidth]{Figures/back_prop.jpg}
+        \caption{Figure shows the notations assigned to different variables in a neural network while implementing backpropagation}
+        \label{fig:back_p}
+    \end{figure} 
+We assign the following notations to weights, biases, weighted sums and activations of the network:
+\begin{itemize}
+    \item The activations are denoted by $a_j^{(l)}$ where the superscript represents the layer number and subscript represents the neuron number. The 
+    layers are numbered starting from $l=1$ (the first layer i.e. input layer) while the neurons are numbered starting from $j=0$ (the first neuron).
+    \item The weight for the connection between $k$th neuron of layer $l-1$ and $j$th neuron of layer $l$ is denoted by $w_{jk}^{(l)}$. The bias for the $j$th neuron in
+    layer $l$ is denoted by $b_j^{(l)}$.
+    \item The weighted sums are denoted by $z_j^{(l)}$ which are passed to an activation function resulting in activation $a_j^{(l)}$.
+\end{itemize}
+We have the following expressions for the cost function (for one training example), activations and weighted sums:
+$$C_0 = \sum_{j=0}^{n_L -1} (a_j^{(L)} - y_j)^2, \quad a_j^{(l)} = \sigma(z_j^{(l)}), \quad z_j^{(l)} = \sum_{k=0}^{n_{l-1} -1} w_{jk}^{(l)}a_k^{(l-1)} + b_j^{(l)}$$
+We can now derive the gradients following the chain-rule. We start by first calculating the gradients for the last layer,
+\begin{equation}
+    \label{eq:bp_eq_d}
+    \begin{aligned}
+        &\frac{\partial C_0}{\partial w_{jk}^{(L)}} = \frac{\partial z_j^{(L)}}{\partial w_{jk}^{(L)}} \frac{\partial a_j^{(L)}}{\partial z_j^{(L)}}\frac{\partial C_0}{\partial a_j^{(L)}}\\
+        &\frac{\partial C_0}{\partial b_j^{(L)}} = \frac{\partial z_j^{(L)}}{\partial b_j^{(L)}} \frac{\partial a_j^{(L)}}{\partial z_j^{(L)}}\frac{\partial C_0}{\partial a_j^{(L)}}\\
+        &\frac{\partial C_0}{\partial a_j^{(L-1)}} = \sum_{j=0}^{n_{L} -1} 
+    \end{aligned}
+\end{equation}
+We can write the derivatives of cost/loss function with respect to weights and biases for neurons in layer $l$ as,
+\begin{equation}
+    \label{eq:bp_eq}
+    \begin{aligned}
+        &\frac{\partial C}{\partial w_{jk}^{(l)}} = a_k^{(l-1)}\sigma'(z_j^{(l)}) \frac{\partial C}{\partial a_j^{(l)}}\\
+        &\frac{\partial C}{\partial b_j^{(l)}} = \sigma'(z_j^{(l)}) \frac{\partial C}{\partial a_j^{(l)}}\\
+        &\frac{\partial C}{\partial a_j^{(l)}} = \sum_{j=0}^{n_{l+1} -1} w_{jk}^{(l+1)} \sigma'(z_j^{(l+1)}) \frac{\partial C}{\partial a_j^{(l+1)}} \quad \text{or} \quad  2(a_j^{(L)} - y_j) \ \text{when} \ l=L
+    \end{aligned}
+\end{equation}
+% We can see from equations \eqref{eq:bp_eq} that the expressions for derivatives with respect to weights and biases essentially remain the same when compared to equations for single-neuron network \ref{fig:sim_NN}.
+% We see an addtional summation term in the expression for $\frac{\partial C}{\partial a_j^{(l)}}$. This is attributed to the fact that 
 %%%%%%%%%%% UAT %%%%%%%%%%%%%%%%%%%%%
 \section{The universal approximation theorem}
 Neural networks are mathematical functions. We use training data to look for suitable weights and biases
