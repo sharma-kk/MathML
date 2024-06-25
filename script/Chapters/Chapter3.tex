@@ -394,10 +394,10 @@ We have already calculated $\frac{\partial C_0}{\partial a^{(L-1)}}$ in the prev
 \end{figure} 
 We have now finished the calculation of all gradients of the network. Although the above procedure is described for a network with only two hidden layers, 
 we can easily generalize the methodology for networks with more hidden layers. In fact, the procedure is essentially the same even if we increase the number of neurons
-in each layer. We demonstrate this by considering a general neural network with multiple hidden layers each having multiple neurons. 
+in each layer. We demonstrate this by considering a general neural network with multiple hidden layers each having multiple neurons (figure \ref{fig:back_p}). 
 \begin{figure}
     \centering
-        \includegraphics[width=.5\textwidth]{Figures/back_prop.jpg}
+        \includegraphics[width=.5\textwidth, angle = -90]{Figures/back_prop.jpg}
         \caption{Figure shows the notations assigned to different variables in a neural network while implementing backpropagation}
         \label{fig:back_p}
     \end{figure} 
@@ -416,21 +416,55 @@ We can now derive the gradients following the chain-rule. We start by first calc
     \label{eq:bp_eq_d}
     \begin{aligned}
         &\frac{\partial C_0}{\partial w_{jk}^{(L)}} = \frac{\partial z_j^{(L)}}{\partial w_{jk}^{(L)}} \frac{\partial a_j^{(L)}}{\partial z_j^{(L)}}\frac{\partial C_0}{\partial a_j^{(L)}}\\
-        &\frac{\partial C_0}{\partial b_j^{(L)}} = \frac{\partial z_j^{(L)}}{\partial b_j^{(L)}} \frac{\partial a_j^{(L)}}{\partial z_j^{(L)}}\frac{\partial C_0}{\partial a_j^{(L)}}\\
-        &\frac{\partial C_0}{\partial a_j^{(L-1)}} = \sum_{j=0}^{n_{L} -1} 
+        &\frac{\partial C_0}{\partial b_j^{(L)}} = \frac{\partial z_j^{(L)}}{\partial b_j^{(L)}} \frac{\partial a_j^{(L)}}{\partial z_j^{(L)}}\frac{\partial C_0}{\partial a_j^{(L)}}
     \end{aligned}
 \end{equation}
-We can write the derivatives of cost/loss function with respect to weights and biases for neurons in layer $l$ as,
+We also derive the gradient with respect to activations in the second-last layer,
+$$\frac{\partial C_0}{\partial a_j^{(L-1)}} = \sum_{j=0}^{n_{L} -1} \frac{\partial z_j^{(L)}}{\partial a_k^{(L-1)}} \frac{\partial a_j^{(L)}}{\partial z_j^{(L)}}\frac{\partial C_0}{\partial a_j^{(L)}}$$
+We can evaluate the gradients $\frac{\partial C_0}{\partial w_{jk}^{(L-1)}}$ and $\frac{\partial C_0}{\partial b_j^{(L-1)}}$ using $\frac{\partial C_0}{\partial a_j^{(L-1)}}$. In this way we can keep moving backwards in the network (hence the name backpropagation)
+and find gradients on the way back.  Notice that the only major change we see in the expressions for gradients when moving to complex neural networks from simple networks is for $\frac{\partial C_0}{\partial a_j^{(L-1)}}$. 
+This is attributed to that fact that now we have multiple neurons in each layer. A change in the activation, say $\frac{\partial C_0}{\partial a_j^{(L-1)}}$, can affect the cost through multiple paths.
+In general, we can write the derivatives of cost/loss function with respect to weights and biases for neurons in any layer $l$ as,
 \begin{equation}
     \label{eq:bp_eq}
     \begin{aligned}
-        &\frac{\partial C}{\partial w_{jk}^{(l)}} = a_k^{(l-1)}\sigma'(z_j^{(l)}) \frac{\partial C}{\partial a_j^{(l)}}\\
-        &\frac{\partial C}{\partial b_j^{(l)}} = \sigma'(z_j^{(l)}) \frac{\partial C}{\partial a_j^{(l)}}\\
-        &\frac{\partial C}{\partial a_j^{(l)}} = \sum_{j=0}^{n_{l+1} -1} w_{jk}^{(l+1)} \sigma'(z_j^{(l+1)}) \frac{\partial C}{\partial a_j^{(l+1)}} \quad \text{or} \quad  2(a_j^{(L)} - y_j) \ \text{when} \ l=L
+        &\frac{\partial C_0}{\partial w_{jk}^{(l)}} = a_k^{(l-1)}\sigma'(z_j^{(l)}) \frac{\partial C_0}{\partial a_j^{(l)}}\\
+        &\frac{\partial C_0}{\partial b_j^{(l)}} = \sigma'(z_j^{(l)}) \frac{\partial C_0}{\partial a_j^{(l)}}
     \end{aligned}
 \end{equation}
-% We can see from equations \eqref{eq:bp_eq} that the expressions for derivatives with respect to weights and biases essentially remain the same when compared to equations for single-neuron network \ref{fig:sim_NN}.
-% We see an addtional summation term in the expression for $\frac{\partial C}{\partial a_j^{(l)}}$. This is attributed to the fact that 
+where 
+$$\frac{\partial C_0}{\partial a_j^{(l)}} = \sum_{j=0}^{n_{l+1} -1} w_{jk}^{(l+1)} \sigma'(z_j^{(l+1)}) \frac{\partial C_0}{\partial a_j^{(l+1)}} \quad \text{or} \quad  2(a_j^{(L)} - y_j) \ \text{when} \ l=L.$$
+The backpropagation algorithm is generally combined with a learning algorithm like stochastic gradient descent to update weights and biases. Let us how this works for a mini-batch of $m$ training examples:
+\begin{enumerate}
+    \item Input a set of training examples 
+    \item For each training example $x$: Set the corresponding input activation $a^{x,1}$ and perform the following steps:
+    \begin{itemize}
+        \item Feedforward: For each $l = 2,3,....L$, compute $z_j^{(l)} = \sum_{k=0}^{n_{l-1} -1} w_{jk}^{(l)} a_k^{(l-1)} + b_j^{(l)}$ and $a_j^{(l)} = \sigma (z_j^{(l)})$
+        \item Compute gradients for the last layer: $$\frac{\partial C_x}{\partial a_j^{(L)}}, \frac{\partial C_x}{\partial w_{jk}^{(L)}}, \frac{\partial C_x}{\partial b_j^{(L)}}$$
+        \item \item Backpropagate: for $l = L-1, L-2, ...., 2$ compute $$\frac{\partial C_x}{\partial a_j^{(l)}}, \frac{\partial C_x}{\partial w_{jk}^{(l)}}, \frac{\partial C_x}{\partial b_j^{(l)}}$$
+    \end{itemize}
+    \item Gradient descent: for each $l = L, L-1, ......, 2$ update weights and biases
+        $$w_{jk}^l \rightarrow w_{jk}^l - \frac{\eta}{m} \sum_x \frac{\partial C_x}{\partial w_{jk}^{(l)}} $$
+        $$b_j^l \rightarrow b_j^l - \frac{\eta}{m} \sum_x \frac{\partial C_x}{\partial b_j^{(l)}} $$
+\end{enumerate}
+\subsection{Why backpropagation is a fast algorithm ?}
+In the last section, we have illustrated the procedure to find gradient of the cost function. At first glance, the backpropagation algorithm may
+seem complicated since it involves a lot of steps and one has to be very careful about the notations. In reality, the backpropagation algorithm is very 
+simple to implement on the computer and is the fastest method available to compute gardients. Most of the terms like $a_k^{(l-1)}, w_{jk}^{(l+1)}$, in 
+the expressions for gradient are already available to the network when making a forward pass; the rest like $\sigma'(z_j^{(l)})$ can be easily computed.
+We can see the advantages of using backpropagation when we compare it to another popular method for calculating gradients. Let us denote (for simplicity) the cost function by $C(w,b)$ 
+where $w$ are the weights $w_1,w_2,.....$ and $b$ are the biases $b_1,b_2,....$ of the network. We can use the fundamental definition of partial derivatives to approximate gradients,
+\begin{equation}
+    \label{eq:part_de}
+    \frac{\partial C}{\partial w_j} \approx \frac{C(w + \epsilon e_j, b) - C(w,b)}{\epsilon}
+\end{equation}
+where $\epsilon > 0$ is a small positive number, and $e_j$ is a unit-vector in the $j-$th direction. In other words, we can compute $frac{\partial C}{\partial w_j}$ by first 
+calculating the cost $C$ for two slightly  different values of $w_j$ and then applying equation \eqref{eq:part_de}. We can use this approach to 
+calculate derivatives with respect to all weight and biases of the network. This method is extremly easy to implement and certainly looks better than the chain-rule. Therefore, one
+might be tempted to use this instead of backpropagation. Unfortunately, this method is extremely slow ! Suppose we have a million ($10^6$) weights and biases in the network. In order to get 
+gradients using equation \eqref{eq:part_de}, we have compute the cost $10^6 + 1$ times; once to compute $C(w)$ and $10^6$ times to calculate $C(w + \epsilon e_j, b)$. This is equivalent to making
+$10^6 +1$ forward passes of the network. On the other hand, with backpropagation, we need to make just one forward pass and one backward pass to calculate all the gradients. The computational cost 
+of the backward pass is similar to the forward pass since both involve similar computations. Therefore, rougly speaking, the backpropagation method is a milion times faster. 
 %%%%%%%%%%% UAT %%%%%%%%%%%%%%%%%%%%%
 \section{The universal approximation theorem}
 Neural networks are mathematical functions. We use training data to look for suitable weights and biases
