@@ -300,7 +300,6 @@ $\nabla C$ by computing $\nabla C_x$ for a small sample of training examples and
 \end{enumerate}
 The use of SGD significantly increases the speed at which a network is trained. We may be making less accurate updates (hence the name \emph{stochastic}) in the weights and biases in comparison to 
 standard gradient descent method but nevertheless the updates are faster and over multiple iterations the cost (on an average) does go down. 
-\subsection{Implementation of a neural network to classify digits}
 \section{Backpropagation}
 Backpropagation is a fast algorithm for computing gradients \cite{nielsen2015neural}. Today, it is the workhorse of learning in neural networks. It uses chain-rule from 
 Calculus to compute gradients $\frac{\partial C}{\partial w_i}, \frac{\partial C}{\partial b_i}$ and in the process reveals how changing the weights and 
@@ -450,8 +449,11 @@ might be tempted to use this instead of backpropagation. Unfortunately, this met
 Suppose we have a million ($10^6$) weights and biases in a network. In order to get 
 gradients using equation \eqref{eq:part_de}, we have to compute the cost $10^6 + 1$ times; once to compute $C(w)$ and $10^6$ times to calculate $C(w + \epsilon e_j, b)$ for different $j$'s. This is equivalent to making
 $10^6 +1$ forward passes of the network. On the other hand, with backpropagation, we need to make just one forward pass and one backward pass to calculate all the gradients. The computational cost 
-of the backward pass is similar to the forward pass since both involve similar computations. Therefore, rougly speaking, (for this example) the backpropagation method is a milion times faster than the numerical gradient computation method, \eqref{eq:part_de}.
-The backpropagation is also more accurate than the numerical gradient method. The expression for gradient used in equation \eqref{eq:part_de} is an approximation of gradients dependent on the value of $\epsilon$ whereas the expressions used in backpropagation are exact.
+of the backward pass is similar to the forward pass since both involve similar computations. Therefore, rougly speaking, (for this example) the backpropagation method is a million times faster than the numerical gradient computation method (equation \eqref{eq:part_de}).
+The backpropagation is also more accurate than the numerical gradient method. The expression for gradient used in equation \eqref{eq:part_de} is an approximation of gradients and depends on the value of $\epsilon$ whereas the expressions used in backpropagation are exact.
+\subsection{Implementation of a neural network to classify digits}
+We use the ideas discussed in the previous sections to write a code for implementing a neural network
+which can classify hand-written digits. A jupyter notebook which illustrates how this neural network performs on MNIST test data set is available in \complementary{\theexample}.
 %%%%%%%%%%% UAT %%%%%%%%%%%%%%%%%%%%%
 \section{The universal approximation theorem}
 Neural networks are mathematical functions. We use training data to look for suitable weights and biases
@@ -459,9 +461,9 @@ such that the neural network can map/obtain the underlying function from which t
 believe that a neural network have the capability of finding the underlying function. What is so special about the
 neural network structure that after training it is able to give us great results on unseen data/ test data ? The answer to these
 questions lies in the universal approximation theorem (UAT) proposed by George Cybenko in $1989$. 
-George Cybenko gave a rigorous proof that feed-forward neural networks can approximate any continuous function defined on a compact set. To understand the 
+George Cybenko gave a rigorous proof that feed-forward neural networks can approximate any continuous function defined on a compact set \cite{cybenko1989approximation}. To understand the 
 proof of this theorem, one should be familiar with some concepts from measure theory and functional analysis. 
-Let us first briefly go through those mathematical preliminaries.
+Let us first briefly go through the mathematical preliminaries.
 \begin{itemize}
     \item Consier an $n$-dimensional unit cube, $I_n = [0,1]^n$. In the universal approximation theorem, the continuous
     functions that a neural network aims to approximate are defined on compacts sets, $I_n$ i.e. the domain of continuous
@@ -469,7 +471,7 @@ Let us first briefly go through those mathematical preliminaries.
     \item Let $C(I_n)$ denote the space of continuous functions on $I_n$.
     For any function $f \in C(I_n), f : [0,1]^n \rightarrow \mathbb{R}$, one can define a suitable norm, 
     $\|f\| = \text{sup}_{x \in I_n} |f(x)|$ known as uniform/supremum norm. We can associate a dual space to $C(I_n)$ 
-    defined as $C(I_n)* = \{L : C(I_n) \rightarrow \mathbb{R}\}$ where $L$ is a linear operator.
+    defined as $C(I_n)^* = \{L : C(I_n) \rightarrow \mathbb{R}\}$ where $L$ is a linear operator \cite{kreyszig1991introductory}.
     \item UAT is defined for feed-forward neural networks having an input layer (with multiple neurons), one hidden layer and
     an output layer with only one neuron (see figure \ref{fig:ffnn_UAT}). Therefore, the functions generated by the neural network can be described as
     $$G(x) = \sum_{j=1}^{N} \alpha_j \sigma (w_j\cdot x + b_j), \quad w_j \in \mathbb{R}^n, \alpha_j, b_j \in \mathbb{R}, x \in I_n$$
@@ -477,7 +479,7 @@ Let us first briefly go through those mathematical preliminaries.
     layer. Also the output is not passed to an activation function. We denote the set of functions of the form $G(x)$
     by $\mathcal{N}$. In the problem of hand-written digit recognition, we assumed that the activation function, $\sigma$ is logistic/sigmoid. 
     However, UAT was proved for a general class of activation functions. The actvation functions are assumed to be continuous and 
-    discriminatory. 
+    discriminatory \cite{cybenko1989approximation}. 
 \end{itemize} 
 \begin{figure}[htbp]
     \centering
@@ -485,13 +487,13 @@ Let us first briefly go through those mathematical preliminaries.
     \caption{A feed-forward neural network with an input layer (having multiple neurons), one hidden layer and an output layer (having only one neuron).}
     \label{fig:ffnn_UAT}
 \end{figure}
-\begin{definition}[Discriminatory function]
-    We say that $\sigma$ is discriminatory if for a measure $\mu \in M(I_n)$ (where $M(I_n)$ is the space 
+\begin{definition}[Discriminatory function \cite{cybenko1989approximation}]
+    We say that a function $\sigma$ is discriminatory if for a measure $\mu \in M(I_n)$ (where $M(I_n)$ is the space 
 of finite, signed regular Borel measures on $I_n$) 
 $$\int_{I_n} \sigma (\mathbf{w}\cdot\mathbf{x} + b) \ d\mu(\mathbf{x}) = 0$$
 for all $\mathbf{w} \in \mathbb{R}^n$ and $b\in \mathbb{R}$ implies that $\mu = 0$.
 \end{definition}
-\begin{thm}[Universal approximation theorem]
+\begin{thm}[Universal approximation theorem \cite{cybenko1989approximation}]
     \label{thm:UAT}
     Let $\sigma$ be any continuous discriminatory function. Then the set $\mathcal{N}$ of functions of the form 
     $$G(x) = \sum_{j=1}^{N} \alpha_j \sigma (w_j\cdot x + b_j), \quad w_j \in \mathbb{R}^n, \alpha_j, b_j \in \mathbb{R}, x \in I_n$$
@@ -499,10 +501,10 @@ for all $\mathbf{w} \in \mathbb{R}^n$ and $b\in \mathbb{R}$ implies that $\mu = 
     a $G(x) \in \mathcal{N}$ such that 
     $$\| G(x) - f(x)\| < \epsilon \ \text{for all} \ x \in I_n$$
 \end{thm}
-Before going into the proof of UAT, we will familiarize ourselfves with some key ideas from measure theory.
+Before going into the proof of UAT, we will familiarize ourselves with some key ideas from measure theory \cite{tao2011introduction}, \cite{kyleUAT}.
 \begin{itemize}
     \item Our aim to measure subsets of $I_n = [0,1]^n$. A collection $\sum$ of subsets of $I_n$ is called a 
-    $\sigma$-algebra if 
+    $\sigma$-algebra (note that this $\sigma$ has no relation to activation function $\sigma$)if 
     \begin{enumerate}
         \item $I_n \in \sum$
         \item If $A \in \sum$, then $A^c = I_n\backslash A \in \sum$
@@ -522,20 +524,20 @@ Before going into the proof of UAT, we will familiarize ourselfves with some key
         &\mu(A) = \text{sup} \{\mu(K) | K \subseteq A, K \ \text{is compact}\} \\
         &\mu(A) = \text{inf} \{\mu(U) | A \subseteq U, U \ \text{is open}\}
     \end{align*}
-    In other words, what regular means is every measurable set can be approximated from above by open measurabel 
+    In other words, what regular means is every measurable set can be approximated from above by open measurable 
     sets and from below by compact measurable sets. 
     \item We define $M(I_n)$ as the set of all finite signed regular Borel measures on $I_n$.
 \end{itemize}
 The proof of UAT also uses ideas from Hahn-Banach theorem and Riesz representation theorem. These theorems 
-have various equivalent versions. We now define the versions which we will refer to later. 
-\begin{thm}[Riesz representation theorem]
+have various equivalent versions. We now define the versions which we will refer to later in the proof. 
+\begin{thm}[Riesz representation theorem \cite{rudin}]
     \label{thm:RR}
     If $K \subset \mathbb{R}^d$ is a compact set, then every linear functional $L$ defined on
     $C(K)$ can represented by a unique regular signed Borel measure $\mu \in M(K)$ in the sense that,
     $$L(f) = \int_K f \ d\mu$$
     where $f: K \rightarrow \mathbb{R}$.
 \end{thm}
-\begin{thm}[Hahn-Banach theorem]
+\begin{thm}[Hahn-Banach theorem, \cite{rudin}]
     \label{thm:HB}
     Let $M$ be a linear subspace of a normed linear space $X$, and $f_0 \in X$. Then $f_0$ is 
     in the closure $\overline{M}$ of $M$ if and only if there is no bounded linear functional 
@@ -548,19 +550,19 @@ We now give the proof of universal approximation theorem \ref{thm:UAT}.
    We claim that $\mathcal{N}$ is also a linear subspace of $C(I_n)$. This is true due to the fact that if 
    we take two functions $G_1(x), G_2(x) \in \mathcal{N}$, we can always find a function $G_3(x) \in \mathcal{N}$ such that 
    $G_3(x) = \alpha G_1(x) + \beta G_2(x)$ for all $\alpha, \beta \in \mathbb{R}$. Our next claim is that the closure of 
-   $\mathcal{N}$ is all of $C(I_n)$ i.e. $\mathcal{N}$ is dense in $C(I_n)$. We prove this by contradiction. 
+   $\mathcal{N}$ is all of $C(I_n)$ i.e. $\mathcal{N}$ is dense in $C(I_n)$. We prove this by contradiction \cite{rudin}. 
 
    Assume that the closure of $\mathcal{N}$, $\overline{\mathcal{N}}$ is not all of $C(I_n)$ i.e. 
-   $\overline{\mathcal{N}} \neq 0$. It can be proved (refer any standard functional analysis book) that $\overline{\mathcal{N}}$
+   $\overline{\mathcal{N}} \neq C(I_n)$. It can be proved (refer any standard functional analysis book) that $\overline{\mathcal{N}}$
    is a closed proper subspace of $C(I_n)$.  By Hahn Banach theorem \ref{thm:HB}, there exists a bounded 
    linear functional on $C(I_n)$, let's call it $L$, with the property that $L \neq 0$ but $L(\overline{\mathcal{N}}) = L(\mathcal{N}) = 0$.
    By following Riesz representation theorem \ref{thm:RR}, we can write this linear operator, $L$ as 
    $$L(h) = \int_{I_n} h(x) \ d\mu(x)$$
-   for some $\mu \in M(I_n) \forall h \in C(I_n)$. Since this operator returns $0$ for all elements of $\mathcal{N}$,
+   for some $\mu \in M(I_n) \ \forall h \in C(I_n)$. Since this operator returns zero for all elements of $\mathcal{N}$,
    we must have for all $w \in \mathbb{R}^n, b \in \mathbb{R}$ 
    $$\int_{I_n} \sigma (w \cdot x + b) \ d\mu(x) = 0.$$
    However, we assumed that $\sigma$ is a discriminatory functions therefore this condition implies that $\mu =0$. This contradicts our initial assumption that 
-   $\overline{\mathcal{N}} \neq 0$ which led to $L \neq = 0 \equiv \mu \neq 0$ via Hahn Banach theorem. Hence, the subspace $\mathcal{N}$ must be dense in $C(I_n)$. 
+   $\overline{\mathcal{N}} \neq C(I_n)$ which led to $L \neq 0 \equiv \mu \neq 0$ via Hahn Banach theorem. Hence, the subspace $\mathcal{N}$ must be dense in $C(I_n)$. 
 \end{proof}
 The universal approximation theorem gives us confidence that neural networks can indeed approximate any continuous function 
 provided that the activation function is continuous and discriminatory. However, it is not clear how to build activation functions which are 
@@ -581,7 +583,7 @@ discriminatory.
     Any continuous sigmoidal function is discriminatory.
 \end{lemma}
 \begin{proof}
-    Refer Cybenko paper.
+    Refer \cite{cybenko1989approximation}.
 \end{proof}
 The lemma \ref{lem:sig} gives us a way to build suitable activation functions. In fact, the sigmoid/logistic function we used as an activation function
 in the neural network for solving hand-written recognition problem satisfies the conditions of definition \ref{def:sig} and is therefore, discriminatory. Although 
